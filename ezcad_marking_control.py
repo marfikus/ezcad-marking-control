@@ -8,10 +8,12 @@ import configparser
 CONFIG_FILE = "ezcad_marking_control.ini"
 DEFAULT_CONFIG = {
     "char_f1": '1',
+    "char_f2": '2',
     "operations_delay": 0.2,
     "window_title": "Маркировка цилиндров (вектор)",
     "element_title": "X",
-    "shift_from_element": 1
+    "shift_from_element": 1,
+    "switch_windows": True
 }
 
 def load_config():
@@ -23,6 +25,8 @@ def load_config():
                 value = int(parser["DEFAULT"][key])
             elif type == "float":
                 value = float(parser["DEFAULT"][key])
+            elif type == "bool":
+                value = bool(int(parser["DEFAULT"][key]))
         except KeyError:
             print(f"No key '{key}' in config file! Loaded from DEFAULT_CONFIG")
             value = DEFAULT_CONFIG[key]    
@@ -39,10 +43,12 @@ def load_config():
     config = {}
 
     config["char_f1"] = load_key(parser, "char_f1")
+    config["char_f2"] = load_key(parser, "char_f2")
     config["operations_delay"] = load_key(parser, "operations_delay", "float")
     config["window_title"] = load_key(parser, "window_title")
     config["element_title"] = load_key(parser, "element_title")
     config["shift_from_element"] = load_key(parser, "shift_from_element", "int")
+    config["switch_windows"] = load_key(parser, "switch_windows", "bool")
 
     return config
 
@@ -107,7 +113,8 @@ def main():
                 # print(event)
 
                 if event.key == keyboard.Key.esc:
-                    press_alt_tab()
+                    if config["switch_windows"]:
+                        press_alt_tab()
                 else:
                     char = ''
                     try:
@@ -118,8 +125,9 @@ def main():
                         pass
 
                     if char == config["char_f1"]:
-                        press_alt_tab()
-                        time.sleep(config["operations_delay"])
+                        if config["switch_windows"]:
+                            press_alt_tab()
+                            time.sleep(config["operations_delay"])
                         press_f1()
 
 
