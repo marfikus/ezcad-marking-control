@@ -2,6 +2,7 @@
 import os
 from pynput import keyboard
 import time
+import configparser
 
 
 CONFIG_FILE = "ezcad_marking_control.ini"
@@ -14,6 +15,24 @@ def load_config():
     if not os.path.exists(CONFIG_FILE):
         print("Config file not found! Loaded DEFAULT_CONFIG")
         return DEFAULT_CONFIG
+
+    parser = configparser.ConfigParser()
+    parser.read(CONFIG_FILE)
+    config = {}
+
+    try:
+        config["char_f1"] = parser["DEFAULT"]["char_f1"]
+    except KeyError:
+        print("No key 'char_f1' in config file! Loaded from DEFAULT_CONFIG")
+        config["char_f1"] = DEFAULT_CONFIG["char_f1"]
+        
+    try:
+        config["operations_delay"] = float(parser["DEFAULT"]["operations_delay"])
+    except KeyError:
+        print("No key 'operations_delay' in config file! Loaded from DEFAULT_CONFIG")
+        config["operations_delay"] = DEFAULT_CONFIG["operations_delay"]
+
+    return config
 
 
 kb = keyboard.Controller()
