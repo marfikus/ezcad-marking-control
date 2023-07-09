@@ -9,6 +9,9 @@ CONFIG_FILE = "ezcad_marking_control.ini"
 DEFAULT_CONFIG = {
     "char_f1": '1',
     "operations_delay": 0.2,
+    "window_title": "Маркировка цилиндров (вектор)",
+    "element_title": "X",
+    "shift_from_element": 1
 }
 
 def load_config():
@@ -17,7 +20,7 @@ def load_config():
         return DEFAULT_CONFIG
 
     parser = configparser.ConfigParser()
-    parser.read(CONFIG_FILE)
+    parser.read(CONFIG_FILE, encoding="utf-8")
     config = {}
 
     try:
@@ -31,6 +34,25 @@ def load_config():
     except KeyError:
         print("No key 'operations_delay' in config file! Loaded from DEFAULT_CONFIG")
         config["operations_delay"] = DEFAULT_CONFIG["operations_delay"]
+
+    try:
+        config["window_title"] = parser["DEFAULT"]["window_title"]
+    except KeyError:
+        print("No key 'window_title' in config file! Loaded from DEFAULT_CONFIG")
+        config["window_title"] = DEFAULT_CONFIG["window_title"]
+
+    try:
+        config["element_title"] = parser["DEFAULT"]["element_title"]
+    except KeyError:
+        print("No key 'element_title' in config file! Loaded from DEFAULT_CONFIG")
+        config["element_title"] = DEFAULT_CONFIG["element_title"]
+
+    try:
+        config["shift_from_element"] = int(parser["DEFAULT"]["shift_from_element"])
+    except KeyError:
+        print("No key 'shift_from_element' in config file! Loaded from DEFAULT_CONFIG")
+        config["shift_from_element"] = DEFAULT_CONFIG["shift_from_element"]
+
 
     return config
 
@@ -50,7 +72,7 @@ def press_f1():
 
 def main():
     config = load_config()
-    # print(config)
+    print(config)
 
     ctrl_l_count = 0
     alt_l_count = 0
