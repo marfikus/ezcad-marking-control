@@ -5,7 +5,9 @@ import time
 kb = keyboard.Controller()
 
 delay = 0.2
-count = 0
+ctrl_l_count = 0
+alt_l_count = 0
+suspended = False
 
 def press_alt_tab():
     kb.press(keyboard.Key.alt)
@@ -22,24 +24,52 @@ with keyboard.Events() as events:
     for event in events:
         # print(event)
         # print(event.key.char)
-        if type(event) is keyboard.Events.Release:
-            if event.key == keyboard.Key.ctrl_l:
-                count += 1
-                if count == 3: # 3 ctrl_l подряд для остановки скрипта
-                    break
-            else:
-                count = 0
-                if event.key == keyboard.Key.esc:
-                    press_alt_tab()
 
-            char = ''
-            try:
-                char = event.key.char
-            except AttributeError:
-                pass
+        if type(event) is not keyboard.Events.Release:
+            continue        
 
-            if char == '`' or char == '1': # потом сделать один вариант (настройка в конфиге)
+        # if type(event) is keyboard.Events.Release:
+        if event.key == keyboard.Key.ctrl_l:
+            alt_l_count = 0
+            ctrl_l_count += 1
+
+            if ctrl_l_count == 2:
+                if not suspended:
+                    suspended = True
+                    print("program suspended")
+            elif ctrl_l_count == 4:
+                print("program stopped")
+                break
+        
+        elif event.key == keyboard.Key.alt_l:
+            ctrl_l_count = 0
+            alt_l_count += 1
+
+            if alt_l_count == 2:
+                if suspended:
+                    suspended = False
+                    alt_l_count = 0
+                    print("program resumed")
+        else:
+            ctrl_l_count = 0
+            alt_l_count = 0
+
+            if suspended:
+                continue
+
+            print(event)
+
+            if event.key == keyboard.Key.esc:
                 press_alt_tab()
-                time.sleep(delay)
-                press_f1()
+
+        char = ''
+        try:
+            char = event.key.char
+        except AttributeError:
+            pass
+
+        if char == '`' or char == '1': # потом сделать один вариант (настройка в конфиге)
+            press_alt_tab()
+            time.sleep(delay)
+            press_f1()
 
