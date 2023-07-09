@@ -63,17 +63,19 @@ def main():
 
                 if event.key == keyboard.Key.esc:
                     press_alt_tab()
+                else:
+                    char = ''
+                    try:
+                        char = event.key.char
+                        # print(char)
+                    except AttributeError as e:
+                        # print(e)
+                        pass
 
-            char = ''
-            try:
-                char = event.key.char
-            except AttributeError:
-                pass
-
-            if char == '`' or char == '1': # потом сделать один вариант (настройка в конфиге)
-                press_alt_tab()
-                time.sleep(OPERATIONS_DELAY)
-                press_f1()
+                    if char == '1':
+                        press_alt_tab()
+                        time.sleep(OPERATIONS_DELAY)
+                        press_f1()
 
 
 if __name__ == "__main__":
