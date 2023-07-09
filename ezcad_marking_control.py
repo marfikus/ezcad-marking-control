@@ -15,6 +15,21 @@ DEFAULT_CONFIG = {
 }
 
 def load_config():
+    def load_key(parser, key, type="str"):
+        try:
+            if type == "str":
+                value = parser["DEFAULT"][key]
+            elif type == "int":
+                value = int(parser["DEFAULT"][key])
+            elif type == "float":
+                value = float(parser["DEFAULT"][key])
+        except KeyError:
+            print(f"No key '{key}' in config file! Loaded from DEFAULT_CONFIG")
+            value = DEFAULT_CONFIG[key]    
+
+        return value
+
+
     if not os.path.exists(CONFIG_FILE):
         print("Config file not found! Loaded DEFAULT_CONFIG")
         return DEFAULT_CONFIG
@@ -23,36 +38,11 @@ def load_config():
     parser.read(CONFIG_FILE, encoding="utf-8")
     config = {}
 
-    try:
-        config["char_f1"] = parser["DEFAULT"]["char_f1"]
-    except KeyError:
-        print("No key 'char_f1' in config file! Loaded from DEFAULT_CONFIG")
-        config["char_f1"] = DEFAULT_CONFIG["char_f1"]
-        
-    try:
-        config["operations_delay"] = float(parser["DEFAULT"]["operations_delay"])
-    except KeyError:
-        print("No key 'operations_delay' in config file! Loaded from DEFAULT_CONFIG")
-        config["operations_delay"] = DEFAULT_CONFIG["operations_delay"]
-
-    try:
-        config["window_title"] = parser["DEFAULT"]["window_title"]
-    except KeyError:
-        print("No key 'window_title' in config file! Loaded from DEFAULT_CONFIG")
-        config["window_title"] = DEFAULT_CONFIG["window_title"]
-
-    try:
-        config["element_title"] = parser["DEFAULT"]["element_title"]
-    except KeyError:
-        print("No key 'element_title' in config file! Loaded from DEFAULT_CONFIG")
-        config["element_title"] = DEFAULT_CONFIG["element_title"]
-
-    try:
-        config["shift_from_element"] = int(parser["DEFAULT"]["shift_from_element"])
-    except KeyError:
-        print("No key 'shift_from_element' in config file! Loaded from DEFAULT_CONFIG")
-        config["shift_from_element"] = DEFAULT_CONFIG["shift_from_element"]
-
+    config["char_f1"] = load_key(parser, "char_f1")
+    config["operations_delay"] = load_key(parser, "operations_delay", "float")
+    config["window_title"] = load_key(parser, "window_title")
+    config["element_title"] = load_key(parser, "element_title")
+    config["shift_from_element"] = load_key(parser, "shift_from_element", "int")
 
     return config
 
