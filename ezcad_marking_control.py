@@ -1,9 +1,20 @@
 
+import os
 from pynput import keyboard
 import time
 
 
-OPERATIONS_DELAY = 0.2
+CONFIG_FILE = "ezcad_marking_control.ini"
+DEFAULT_CONFIG = {
+    "char_f1": '1',
+    "operations_delay": 0.2,
+}
+
+def load_config():
+    if not os.path.exists(CONFIG_FILE):
+        print("Config file not found! Loaded DEFAULT_CONFIG")
+        return DEFAULT_CONFIG
+
 
 kb = keyboard.Controller()
 
@@ -19,6 +30,9 @@ def press_f1():
 
 
 def main():
+    config = load_config()
+    # print(config)
+
     ctrl_l_count = 0
     alt_l_count = 0
     suspended = False
@@ -72,9 +86,9 @@ def main():
                         # print(e)
                         pass
 
-                    if char == '1':
+                    if char == config["char_f1"]:
                         press_alt_tab()
-                        time.sleep(OPERATIONS_DELAY)
+                        time.sleep(config["operations_delay"])
                         press_f1()
 
 
