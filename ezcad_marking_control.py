@@ -52,11 +52,11 @@ def get_field_value(window_title, element_title, shift_from_element):
         # print(obj)
         if obj[1] == element_title:
             i = dump.index(obj) + shift_from_element
-            print("element: ", dump[i])
+            # print("element: ", dump[i])
             edit = dump[i]
             try:
                 field_value = getEditText_fixed(edit[0])
-                print("field_value: ", field_value)
+                # print("field_value: ", field_value)
                 element_found = True
                 # field_value = int(field_value)
             except ValueError:
@@ -121,6 +121,10 @@ def press_f1():
     kb.press(keyboard.Key.f1)
     kb.release(keyboard.Key.f1)
 
+def press_f2():
+    kb.press(keyboard.Key.f2)
+    kb.release(keyboard.Key.f2)
+
 
 def main():
     config = load_config()
@@ -172,9 +176,26 @@ def main():
                 if event.key == keyboard.Key.esc:
                     # если авто старт, то дождаться возврата ротора и нажать f2
                     if config["auto_start_burn"]:
-                        print("f2")
+                        # нужно таймаут добавить на всякий случай
+                        while True:
+                            current_field_value = get_field_value(
+                                config["window_title"], 
+                                config["element_title"], 
+                                config["shift_from_element"]
+                            )
+                            if current_field_value["error"]:
+                               print("Auto start is unavailable: no value for tracking") 
+                               break
+                            elif (current_field_value["value"] == source_field_value["value"]):
+                                print("f2")
+                                press_f2()
+                                break
+
+                            print("await rotor...")
+                            time.sleep(0.5)
 
                     if config["switch_windows"]:
+                        time.sleep(config["operations_delay"])
                         press_alt_tab()
                 else:
                     char = ''
@@ -200,6 +221,7 @@ def main():
                             if source_field_value["error"]:
                                print("Auto start is unavailable: no value for tracking") 
 
+                        print("f1")
                         press_f1()
 
 
