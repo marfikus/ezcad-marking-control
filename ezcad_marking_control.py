@@ -12,6 +12,7 @@ DEFAULT_CONFIG = {
     "char_f2": '2',
     "operations_delay": 0.2,
     "await_rotor_cycle_delay": 0.5,
+    "await_rotor_timeout": 10.0,
     "window_title": "Маркировка цилиндров (вектор)",
     "element_title": "X",
     "shift_from_element": 1,
@@ -102,6 +103,7 @@ def load_config():
     config["char_f2"] = load_key(parser, "char_f2")
     config["operations_delay"] = load_key(parser, "operations_delay", "float")
     config["await_rotor_cycle_delay"] = load_key(parser, "await_rotor_cycle_delay", "float")
+    config["await_rotor_timeout"] = load_key(parser, "await_rotor_timeout", "float")
     config["window_title"] = load_key(parser, "window_title")
     config["element_title"] = load_key(parser, "element_title")
     config["shift_from_element"] = load_key(parser, "shift_from_element", "int")
@@ -181,7 +183,7 @@ def main():
                 if event.key == keyboard.Key.esc:
                     # если авто старт, то дождаться возврата ротора и нажать f2
                     if config["auto_start_burn"]:
-                        # нужно таймаут добавить на всякий случай
+                        cur_time = 0
                         while True:
                             current_field_value = get_field_value(
                                 config["window_title"], 
@@ -196,8 +198,14 @@ def main():
                                 press_f2()
                                 break
 
-                            print("await rotor...")
+                            print("Await rotor...")
                             delay(config["await_rotor_cycle_delay"])
+                            
+                            cur_time += config["await_rotor_cycle_delay"]
+                            # print(cur_time)
+                            if cur_time >= config["await_rotor_timeout"]:
+                                print("Await rotor timeout!")
+                                break
 
                     if config["switch_windows"]:
                         delay(config["operations_delay"])
