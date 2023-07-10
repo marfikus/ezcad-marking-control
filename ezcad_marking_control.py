@@ -11,6 +11,7 @@ DEFAULT_CONFIG = {
     "char_f1": '1',
     "char_f2": '2',
     "operations_delay": 0.2,
+    "await_rotor_cycle_delay": 0.5,
     "window_title": "Маркировка цилиндров (вектор)",
     "element_title": "X",
     "shift_from_element": 1,
@@ -100,6 +101,7 @@ def load_config():
     config["char_f1"] = load_key(parser, "char_f1")
     config["char_f2"] = load_key(parser, "char_f2")
     config["operations_delay"] = load_key(parser, "operations_delay", "float")
+    config["await_rotor_cycle_delay"] = load_key(parser, "await_rotor_cycle_delay", "float")
     config["window_title"] = load_key(parser, "window_title")
     config["element_title"] = load_key(parser, "element_title")
     config["shift_from_element"] = load_key(parser, "shift_from_element", "int")
@@ -124,6 +126,9 @@ def press_f1():
 def press_f2():
     kb.press(keyboard.Key.f2)
     kb.release(keyboard.Key.f2)
+
+def delay(delay):
+    time.sleep(delay)
 
 
 def main():
@@ -192,10 +197,10 @@ def main():
                                 break
 
                             print("await rotor...")
-                            time.sleep(0.5)
+                            delay(config["await_rotor_cycle_delay"])
 
                     if config["switch_windows"]:
-                        time.sleep(config["operations_delay"])
+                        delay(config["operations_delay"])
                         press_alt_tab()
                 else:
                     char = ''
@@ -209,7 +214,7 @@ def main():
                     if char == config["char_f1"]:
                         if config["switch_windows"]:
                             press_alt_tab()
-                            time.sleep(config["operations_delay"])
+                            delay(config["operations_delay"])
 
                         if config["auto_start_burn"]:
                             # запомнить исходное значение поля позиции ротора
