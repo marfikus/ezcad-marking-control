@@ -18,6 +18,7 @@ DEFAULT_CONFIG = {
     "shift_from_element": 1,
     "switch_windows": True,
     "auto_start_burn": True,
+    "debug_print": True,
 }
 
 # пока экспериментальный вариант (исправленный относительно winGuiAuto)
@@ -32,7 +33,7 @@ def getEditText_fixed(hwnd):
     text = win32gui.PyGetString(win32gui.PyGetBufferAddressAndLen(buffer)[0], bufLen - 1)
     return text
 
-def get_field_value(window_title, element_title, shift_from_element):
+def get_field_value(window_title, element_title, shift_from_element, debug_print=False):
     field_value = ""
     result = {
         "value": field_value,
@@ -51,7 +52,8 @@ def get_field_value(window_title, element_title, shift_from_element):
 
     # найти элемент
     for obj in dump:
-        # print(obj)
+        if debug_print:
+            print(obj)
         if obj[1] == element_title:
             i = dump.index(obj) + shift_from_element
             # print("element: ", dump[i])
@@ -109,6 +111,7 @@ def load_config():
     config["shift_from_element"] = load_key(parser, "shift_from_element", "int")
     config["switch_windows"] = load_key(parser, "switch_windows", "bool")
     config["auto_start_burn"] = load_key(parser, "auto_start_burn", "bool")
+    config["debug_print"] = load_key(parser, "debug_print", "bool")
 
     return config
 
@@ -180,11 +183,17 @@ def main():
 
                 # print(event)
 
+                # заменить esc на тильду: исключить ложные сработки (из других программ)
                 if event.key == keyboard.Key.esc:
+                    # добавить защиту: контроль состояния, действовать только в режиме прицеливания
+
                     # если авто старт, то дождаться возврата ротора и нажать f2
                     if config["auto_start_burn"]:
                         cur_time = 0
                         while True:
+                            print("Await rotor...")
+                            delay(config["await_rotor_cycle_delay"])
+
                             current_field_value = get_field_value(
                                 config["window_title"], 
                                 config["element_title"], 
@@ -193,13 +202,12 @@ def main():
                             if current_field_value["error"]:
                                print("Auto start is unavailable: no value for tracking") 
                                break
+                            # сравнивать приближенные значения, округлять до сотых?
                             elif (current_field_value["value"] == source_field_value["value"]):
+                                delay(config["operations_delay"])
                                 print("f2")
                                 press_f2()
                                 break
-
-                            print("Await rotor...")
-                            delay(config["await_rotor_cycle_delay"])
                             
                             cur_time += config["await_rotor_cycle_delay"]
                             # print(cur_time)
@@ -229,7 +237,8 @@ def main():
                             source_field_value = get_field_value(
                                 config["window_title"], 
                                 config["element_title"], 
-                                config["shift_from_element"]
+                                config["shift_from_element"],
+                                config["debug_print"]
                             )
                             if source_field_value["error"]:
                                print("Auto start is unavailable: no value for tracking") 
