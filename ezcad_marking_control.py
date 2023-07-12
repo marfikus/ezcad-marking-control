@@ -10,6 +10,7 @@ CONFIG_FILE = "ezcad_marking_control.ini"
 DEFAULT_CONFIG = {
     "char_f1": '1',
     "char_f2": '2',
+    "char_esc": '`',
     "operations_delay": 0.2,
     "await_rotor_cycle_delay": 0.5,
     "await_rotor_timeout": 10.0,
@@ -103,6 +104,7 @@ def load_config():
 
     config["char_f1"] = load_key(parser, "char_f1")
     config["char_f2"] = load_key(parser, "char_f2")
+    config["char_esc"] = load_key(parser, "char_esc")
     config["operations_delay"] = load_key(parser, "operations_delay", "float")
     config["await_rotor_cycle_delay"] = load_key(parser, "await_rotor_cycle_delay", "float")
     config["await_rotor_timeout"] = load_key(parser, "await_rotor_timeout", "float")
@@ -131,6 +133,10 @@ def press_f1():
 def press_f2():
     kb.press(keyboard.Key.f2)
     kb.release(keyboard.Key.f2)
+
+def press_esc():
+    kb.press(keyboard.Key.esc)
+    kb.release(keyboard.Key.esc)
 
 def delay(delay):
     time.sleep(delay)
@@ -183,9 +189,19 @@ def main():
 
                 # print(event)
 
-                # заменить esc на тильду: исключить ложные сработки (из других программ)
-                if event.key == keyboard.Key.esc:
+                char = ''
+                try:
+                    char = event.key.char
+                    # print(char)
+                except AttributeError as e:
+                    # print(e)
+                    continue
+
+                if char == config["char_esc"]:
                     # добавить защиту: контроль состояния, действовать только в режиме прицеливания
+
+                    print("esc")
+                    press_esc()
 
                     # если авто старт, то дождаться возврата ротора и нажать f2
                     if config["auto_start_burn"]:
@@ -218,33 +234,25 @@ def main():
                     if config["switch_windows"]:
                         delay(config["operations_delay"])
                         press_alt_tab()
-                else:
-                    char = ''
-                    try:
-                        char = event.key.char
-                        # print(char)
-                    except AttributeError as e:
-                        # print(e)
-                        pass
 
-                    if char == config["char_f1"]:
-                        if config["switch_windows"]:
-                            press_alt_tab()
-                            delay(config["operations_delay"])
+                elif char == config["char_f1"]:
+                    if config["switch_windows"]:
+                        press_alt_tab()
+                        delay(config["operations_delay"])
 
-                        if config["auto_start_burn"]:
-                            # запомнить исходное значение поля позиции ротора
-                            source_field_value = get_field_value(
-                                config["window_title"], 
-                                config["element_title"], 
-                                config["shift_from_element"],
-                                config["debug_print"]
-                            )
-                            if source_field_value["error"]:
-                               print("Auto start is unavailable: no value for tracking") 
+                    if config["auto_start_burn"]:
+                        # запомнить исходное значение поля позиции ротора
+                        source_field_value = get_field_value(
+                            config["window_title"], 
+                            config["element_title"], 
+                            config["shift_from_element"],
+                            config["debug_print"]
+                        )
+                        if source_field_value["error"]:
+                           print("Auto start is unavailable: no value for tracking") 
 
-                        print("f1")
-                        press_f1()
+                    print("f1")
+                    press_f1()
 
 
 if __name__ == "__main__":
