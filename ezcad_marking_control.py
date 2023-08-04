@@ -218,7 +218,11 @@ def main():
                             if current_field_value["error"]:
                                print("Auto start is unavailable: no value for tracking") 
                                break
-                            # сравнивать приближенные значения, округлять до сотых?
+                            # значения могут немного отличаться в тысячных долях (может и в сотых), 
+                            # поэтому лучше вычислять разницу и сравнивать с макс допустимым значением из конфига
+                            # r = abs(round(0.425 - 0.431, 2))
+                            # if (r < 0.05): ok
+
                             elif (current_field_value["value"] == source_field_value["value"]):
                                 delay(config["operations_delay"])
                                 print("f2")
