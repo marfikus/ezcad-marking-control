@@ -119,7 +119,11 @@ def load_config():
     config["debug_print"] = load_key(parser, "debug_print", "bool")
 
 
-kb = keyboard.Controller()
+kb = None
+
+def init_keyboard():
+    global kb
+    kb = keyboard.Controller()
 
 def press_alt_tab():
     kb.press(keyboard.Key.alt)
@@ -146,6 +150,8 @@ def delay(delay):
 def main():
     load_config()
     print(config)
+
+    init_keyboard()
 
     ctrl_l_count = 0
     alt_l_count = 0
