@@ -21,6 +21,7 @@ DEFAULT_CONFIG = {
     "auto_start_burn": True,
     "debug_print": True,
 }
+config = {}
 
 # пока экспериментальный вариант (исправленный относительно winGuiAuto)
 # Из однострочного editText вроде извлекает значение нормально, с другими не проверял
@@ -77,6 +78,8 @@ def get_field_value(window_title, element_title, shift_from_element, debug_print
 
 
 def load_config():
+    global config
+
     def load_key(parser, key, type="str"):
         try:
             if type == "str":
@@ -96,11 +99,11 @@ def load_config():
 
     if not os.path.exists(CONFIG_FILE):
         print("Config file not found! Loaded DEFAULT_CONFIG")
-        return DEFAULT_CONFIG
+        config = DEFAULT_CONFIG
+        return
 
     parser = configparser.ConfigParser()
     parser.read(CONFIG_FILE, encoding="utf-8")
-    config = {}
 
     config["char_f1"] = load_key(parser, "char_f1")
     config["char_f2"] = load_key(parser, "char_f2")
@@ -114,8 +117,6 @@ def load_config():
     config["switch_windows"] = load_key(parser, "switch_windows", "bool")
     config["auto_start_burn"] = load_key(parser, "auto_start_burn", "bool")
     config["debug_print"] = load_key(parser, "debug_print", "bool")
-
-    return config
 
 
 kb = keyboard.Controller()
@@ -143,7 +144,7 @@ def delay(delay):
 
 
 def main():
-    config = load_config()
+    load_config()
     print(config)
 
     ctrl_l_count = 0
