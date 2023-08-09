@@ -153,9 +153,6 @@ def main():
 
     init_keyboard()
 
-    ctrl_l_count = 0
-    alt_l_count = 0
-    suspended = False
     source_field_value = {}
 
     with keyboard.Events() as events:
@@ -164,106 +161,76 @@ def main():
             # print(event.key.char)
 
             if type(event) is not keyboard.Events.Release:
-                continue        
+                continue
 
-            if event.key == keyboard.Key.ctrl_l:
-                alt_l_count = 0
-                ctrl_l_count += 1
+            char = ''
+            try:
+                char = event.key.char
+                # print(char)
+            except AttributeError as e:
+                # print(e)
+                continue
 
-                if ctrl_l_count == 2:
-                    if not suspended:
-                        suspended = True
-                        print("program suspended")
-                elif ctrl_l_count == 4:
-                    print("program stopped")
-                    return
-            
-            elif event.key == keyboard.Key.alt_l:
-                ctrl_l_count = 0
-                alt_l_count += 1
+            if char == config["char_esc"]:
+                # добавить защиту: контроль состояния, действовать только в режиме прицеливания
 
-                if alt_l_count == 2:
-                    if suspended:
-                        suspended = False
-                        alt_l_count = 0
-                        print("program resumed")
-            else:
-                ctrl_l_count = 0
-                alt_l_count = 0
+                print("esc")
+                press_esc()
 
-                if suspended:
-                    continue
+                # если авто старт, то дождаться возврата ротора и нажать f2
+                if config["auto_start_burn"]:
+                    cur_time = 0
+                    while True:
+                        print("Await rotor...")
+                        delay(config["await_rotor_cycle_delay"])
 
-                # print(event)
-
-                char = ''
-                try:
-                    char = event.key.char
-                    # print(char)
-                except AttributeError as e:
-                    # print(e)
-                    continue
-
-                if char == config["char_esc"]:
-                    # добавить защиту: контроль состояния, действовать только в режиме прицеливания
-
-                    print("esc")
-                    press_esc()
-
-                    # если авто старт, то дождаться возврата ротора и нажать f2
-                    if config["auto_start_burn"]:
-                        cur_time = 0
-                        while True:
-                            print("Await rotor...")
-                            delay(config["await_rotor_cycle_delay"])
-
-                            current_field_value = get_field_value(
-                                config["window_title"], 
-                                config["element_title"], 
-                                config["shift_from_element"]
-                            )
-                            if current_field_value["error"]:
-                               print("Auto start is unavailable: no value for tracking") 
-                               break
-                            # значения могут немного отличаться в тысячных долях (может и в сотых), 
-                            # поэтому лучше вычислять разницу и сравнивать с макс допустимым значением из конфига
-                            # r = abs(round(0.425 - 0.431, 2))
-                            # if (r < 0.05): ok
-
-                            elif (current_field_value["value"] == source_field_value["value"]):
-                                delay(config["operations_delay"])
-                                print("f2")
-                                press_f2()
-                                break
-                            
-                            cur_time += config["await_rotor_cycle_delay"]
-                            # print(cur_time)
-                            if cur_time >= config["await_rotor_timeout"]:
-                                print("Await rotor timeout!")
-                                break
-
-                    if config["switch_windows"]:
-                        delay(config["operations_delay"])
-                        press_alt_tab()
-
-                elif char == config["char_f1"]:
-                    if config["switch_windows"]:
-                        press_alt_tab()
-                        delay(config["operations_delay"])
-
-                    if config["auto_start_burn"]:
-                        # запомнить исходное значение поля позиции ротора
-                        source_field_value = get_field_value(
+                        current_field_value = get_field_value(
                             config["window_title"], 
                             config["element_title"], 
-                            config["shift_from_element"],
-                            config["debug_print"]
+                            config["shift_from_element"]
                         )
-                        if source_field_value["error"]:
+                        if current_field_value["error"]:
                            print("Auto start is unavailable: no value for tracking") 
+                           break
+                        # значения могут немного отличаться в тысячных долях (может и в сотых), 
+                        # поэтому лучше вычислять разницу и сравнивать с макс допустимым значением из конфига
+                        # r = abs(round(0.425 - 0.431, 2))
+                        # if (r < 0.05): ok
 
-                    print("f1")
-                    press_f1()
+                        elif (current_field_value["value"] == source_field_value["value"]):
+                            delay(config["operations_delay"])
+                            print("f2")
+                            press_f2()
+                            break
+                        
+                        cur_time += config["await_rotor_cycle_delay"]
+                        # print(cur_time)
+                        if cur_time >= config["await_rotor_timeout"]:
+                            print("Await rotor timeout!")
+                            break
+
+                if config["switch_windows"]:
+                    delay(config["operations_delay"])
+                    press_alt_tab()
+
+            elif char == config["char_f1"]:
+                if config["switch_windows"]:
+                    press_alt_tab()
+                    delay(config["operations_delay"])
+
+                if config["auto_start_burn"]:
+                    # запомнить исходное значение поля позиции ротора
+                    source_field_value = get_field_value(
+                        config["window_title"], 
+                        config["element_title"], 
+                        config["shift_from_element"],
+                        config["debug_print"]
+                    )
+                    if source_field_value["error"]:
+                       print("Auto start is unavailable: no value for tracking") 
+
+                print("f1")
+                press_f1()
 
 
 if __name__ == "__main__":
