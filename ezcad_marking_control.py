@@ -35,7 +35,7 @@ def getEditText_fixed(hwnd):
     text = win32gui.PyGetString(win32gui.PyGetBufferAddressAndLen(buffer)[0], bufLen - 1)
     return text
 
-def get_field_value(window_title, element_title, shift_from_element, debug_print=False):
+def get_field_value(window_title, element_title, shift_from_element):
     field_value = ""
     result = {
         "value": field_value,
@@ -54,8 +54,7 @@ def get_field_value(window_title, element_title, shift_from_element, debug_print
 
     # найти элемент
     for obj in dump:
-        if debug_print:
-            print(obj)
+        debug_print(obj)
         if obj[1] == element_title:
             i = dump.index(obj) + shift_from_element
             # print("element: ", dump[i])
@@ -146,6 +145,10 @@ def press_esc():
 def delay(delay):
     time.sleep(delay)
 
+def debug_print(msg):
+    if config["debug_print"]:
+        print(msg)
+
 
 def main():
     load_config()
@@ -174,16 +177,17 @@ def main():
             if char == config["char_esc"]:
                 # добавить защиту: контроль состояния, действовать только в режиме прицеливания
 
-                print("esc")
+                debug_print("esc")
                 press_esc()
 
                 # если авто старт, то дождаться возврата ротора и нажать f2
                 if config["auto_start_burn"]:
                     cur_time = 0
                     while True:
-                        print("Await rotor...")
+                        debug_print("Await rotor...")
                         delay(config["await_rotor_cycle_delay"])
 
+                        # поскольку запрашиваются параметры из конфига, то можно сделать их дефолтными для метода
                         current_field_value = get_field_value(
                             config["window_title"], 
                             config["element_title"], 
@@ -199,14 +203,14 @@ def main():
 
                         elif (current_field_value["value"] == source_field_value["value"]):
                             delay(config["operations_delay"])
-                            print("f2")
+                            debug_print("f2")
                             press_f2()
                             break
                         
                         cur_time += config["await_rotor_cycle_delay"]
                         # print(cur_time)
                         if cur_time >= config["await_rotor_timeout"]:
-                            print("Await rotor timeout!")
+                            debug_print("Await rotor timeout!")
                             break
 
                 if config["switch_windows"]:
@@ -223,13 +227,12 @@ def main():
                     source_field_value = get_field_value(
                         config["window_title"], 
                         config["element_title"], 
-                        config["shift_from_element"],
-                        config["debug_print"]
+                        config["shift_from_element"]
                     )
                     if source_field_value["error"]:
                        print("Auto start is unavailable: no value for tracking") 
 
-                print("f1")
+                debug_print("f1")
                 press_f1()
 
 
