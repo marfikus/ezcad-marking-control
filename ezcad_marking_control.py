@@ -127,6 +127,7 @@ def init_keyboard():
 def press_alt_tab():
     kb.press(keyboard.Key.alt)
     kb.press(keyboard.Key.tab)
+    delay(config["operations_delay"])
     kb.release(keyboard.Key.tab)
     kb.release(keyboard.Key.alt)    
 
