@@ -202,8 +202,10 @@ def main():
                         else:
                             # значения могут немного отличаться в тысячных долях (может и в сотых), 
                             # поэтому вычисляем разницу и сравниваем с макс допустимым значением из конфига
-                            diff = abs(round(current_field_value["value"] - source_field_value["value"], 2))
-                            if diff < config["rotor_position_diff"]:                        
+                            current_value = float(current_field_value["value"])
+                            source_value = float(source_field_value["value"])
+                            diff = abs(round(current_value - source_value, 2))
+                            if diff < config["rotor_position_diff"]:
                                 delay(config["operations_delay"])
                                 debug_print("f2")
                                 press_f2()
