@@ -14,6 +14,7 @@ DEFAULT_CONFIG = {
     "operations_delay": 0.2,
     "await_rotor_cycle_delay": 0.5,
     "await_rotor_timeout": 10.0,
+    "rotor_position_diff": 0.05,
     "window_title": "Маркировка цилиндров (вектор)",
     "element_title": "X",
     "shift_from_element": 1,
@@ -110,6 +111,7 @@ def load_config():
     config["operations_delay"] = load_key(parser, "operations_delay", "float")
     config["await_rotor_cycle_delay"] = load_key(parser, "await_rotor_cycle_delay", "float")
     config["await_rotor_timeout"] = load_key(parser, "await_rotor_timeout", "float")
+    config["rotor_position_diff"] = load_key(parser, "rotor_position_diff", "float")
     config["window_title"] = load_key(parser, "window_title")
     config["element_title"] = load_key(parser, "element_title")
     config["shift_from_element"] = load_key(parser, "shift_from_element", "int")
@@ -197,16 +199,15 @@ def main():
                         if current_field_value["error"]:
                            print("Auto start is unavailable: no value for tracking") 
                            break
-                        # значения могут немного отличаться в тысячных долях (может и в сотых), 
-                        # поэтому лучше вычислять разницу и сравнивать с макс допустимым значением из конфига
-                        # r = abs(round(0.425 - 0.431, 2))
-                        # if (r < 0.05): ok
-
-                        elif (current_field_value["value"] == source_field_value["value"]):
-                            delay(config["operations_delay"])
-                            debug_print("f2")
-                            press_f2()
-                            break
+                        else:
+                            # значения могут немного отличаться в тысячных долях (может и в сотых), 
+                            # поэтому вычисляем разницу и сравниваем с макс допустимым значением из конфига
+                            diff = abs(round(current_field_value["value"] - source_field_value["value"], 2))
+                            if diff < config["rotor_position_diff"]:                        
+                                delay(config["operations_delay"])
+                                debug_print("f2")
+                                press_f2()
+                                break
                         
                         cur_time += config["await_rotor_cycle_delay"]
                         # print(cur_time)
