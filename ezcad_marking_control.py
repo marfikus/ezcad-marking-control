@@ -6,6 +6,8 @@ import configparser
 from winGuiAuto import *
 
 
+PROGRAM_VERSION = "1.0.2"
+
 CONFIG_FILE = "ezcad_marking_control.ini"
 DEFAULT_CONFIG = {
     "char_f1": '1',
@@ -154,8 +156,9 @@ def debug_print(msg):
 
 
 def main():
+    print(f"Program version: {PROGRAM_VERSION}")
     load_config()
-    print(config)
+    print(f"Current configuration: \n{config}")
 
     init_keyboard()
 
@@ -205,6 +208,7 @@ def main():
                             current_value = float(current_field_value["value"])
                             source_value = float(source_field_value["value"])
                             diff = abs(round(current_value - source_value, 2))
+                            debug_print(f"current_value: {current_value}, source_value: {source_value}, diff: {diff}")
                             if diff < config["rotor_position_diff"]:
                                 delay(config["operations_delay"])
                                 debug_print("f2")
@@ -214,7 +218,7 @@ def main():
                         cur_time += config["await_rotor_cycle_delay"]
                         # print(cur_time)
                         if cur_time >= config["await_rotor_timeout"]:
-                            debug_print("Await rotor timeout!")
+                            print("Await rotor timeout!")
                             break
 
                 if config["switch_windows"]:
