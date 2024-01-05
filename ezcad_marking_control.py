@@ -7,7 +7,7 @@ from winGuiAuto import *
 import ast
 
 
-PROGRAM_VERSION = "1.0.2"
+PROGRAM_VERSION = "1.0.3"
 
 CONFIG_FILE = "ezcad_marking_control.ini"
 DEFAULT_CONFIG = {
@@ -25,6 +25,8 @@ DEFAULT_CONFIG = {
     "auto_start_burn": True,
     "check_foreground_window_on_f1": True,
     "valid_foreground_window_titles_on_f1": ["ezcad_marking_control.exe"],
+    "check_foreground_window_on_esc": True,
+    "valid_foreground_window_title_on_esc": "Маркировка цилиндров (вектор)",
     "debug_print": True,
 }
 config = {}
@@ -140,6 +142,8 @@ def load_config():
     config["auto_start_burn"] = load_key(parser, "auto_start_burn", "bool")
     config["check_foreground_window_on_f1"] = load_key(parser, "check_foreground_window_on_f1", "bool")
     config["valid_foreground_window_titles_on_f1"] = load_key(parser, "valid_foreground_window_titles_on_f1", "list")
+    config["check_foreground_window_on_esc"] = load_key(parser, "check_foreground_window_on_esc", "bool")
+    config["valid_foreground_window_title_on_esc"] = load_key(parser, "valid_foreground_window_title_on_esc")
     config["debug_print"] = load_key(parser, "debug_print", "bool")
 
 
@@ -202,7 +206,9 @@ def main():
                 continue
 
             if char == config["char_esc"]:
-                # добавить защиту: контроль состояния, действовать только в режиме прицеливания
+                if config["check_foreground_window_on_esc"]:
+                    if not is_valid_foreground_window([config["valid_foreground_window_title_on_esc"]]):
+                        continue
 
                 debug_print("esc")
                 press_esc()
