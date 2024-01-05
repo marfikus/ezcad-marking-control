@@ -4,6 +4,7 @@ from pynput import keyboard
 import time
 import configparser
 from winGuiAuto import *
+import ast
 
 
 PROGRAM_VERSION = "1.0.2"
@@ -22,6 +23,8 @@ DEFAULT_CONFIG = {
     "shift_from_element": 1,
     "switch_windows": True,
     "auto_start_burn": True,
+    "check_foreground_window_on_f1": True,
+    "valid_foreground_window_titles_on_f1": ["ezcad_marking_control.exe"],
     "debug_print": True,
 }
 config = {}
@@ -79,6 +82,20 @@ def get_field_value(window_title, element_title, shift_from_element):
     return result
 
 
+def is_valid_foreground_window(valid_window_titles):
+    result = False
+
+    foreground_window_title = win32gui.GetWindowText(win32gui.GetForegroundWindow())
+    debug_print(foreground_window_title)
+
+    for title in valid_window_titles:
+        if title in foreground_window_title:
+            result = True
+            break
+
+    return result
+
+
 def load_config():
     global config
 
@@ -92,6 +109,8 @@ def load_config():
                 value = float(parser["DEFAULT"][key])
             elif type == "bool":
                 value = bool(int(parser["DEFAULT"][key]))
+            elif type == "list":
+                value = ast.literal_eval(parser["DEFAULT"][key])
         except KeyError:
             print(f"No key '{key}' in config file! Loaded from DEFAULT_CONFIG")
             value = DEFAULT_CONFIG[key]    
@@ -119,6 +138,8 @@ def load_config():
     config["shift_from_element"] = load_key(parser, "shift_from_element", "int")
     config["switch_windows"] = load_key(parser, "switch_windows", "bool")
     config["auto_start_burn"] = load_key(parser, "auto_start_burn", "bool")
+    config["check_foreground_window_on_f1"] = load_key(parser, "check_foreground_window_on_f1", "bool")
+    config["valid_foreground_window_titles_on_f1"] = load_key(parser, "valid_foreground_window_titles_on_f1", "list")
     config["debug_print"] = load_key(parser, "debug_print", "bool")
 
 
@@ -226,6 +247,10 @@ def main():
                     press_alt_tab()
 
             elif char == config["char_f1"]:
+                if config["check_foreground_window_on_f1"]:
+                    if not is_valid_foreground_window(config["valid_foreground_window_titles_on_f1"]):
+                        continue
+
                 if config["switch_windows"]:
                     press_alt_tab()
                     delay(config["operations_delay"])
@@ -238,7 +263,8 @@ def main():
                         config["shift_from_element"]
                     )
                     if source_field_value["error"]:
-                       print("Auto start is unavailable: no value for tracking") 
+                       print("Auto start is unavailable: no value for tracking")
+                       # добавить continue?
 
                 debug_print("f1")
                 press_f1()
