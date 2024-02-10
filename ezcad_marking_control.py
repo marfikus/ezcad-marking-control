@@ -187,7 +187,7 @@ def main():
 
     init_keyboard()
 
-    source_field_value = {}
+    source_field_value = None
 
     with keyboard.Events() as events:
         for event in events:
@@ -220,6 +220,10 @@ def main():
                         debug_print("Await rotor...")
                         delay(config["await_rotor_cycle_delay"])
 
+                        if source_field_value == None or source_field_value["error"]:
+                            print("Auto start is unavailable: no source value for tracking")
+                            break
+
                         # поскольку запрашиваются параметры из конфига, то можно сделать их дефолтными для метода
                         current_field_value = get_field_value(
                             config["window_title"], 
@@ -227,7 +231,7 @@ def main():
                             config["shift_from_element"]
                         )
                         if current_field_value["error"]:
-                           print("Auto start is unavailable: no value for tracking") 
+                           print("Auto start is unavailable: no current value for tracking")
                            break
                         else:
                             # значения могут немного отличаться в тысячных долях (может и в сотых), 
@@ -252,6 +256,8 @@ def main():
                     delay(config["operations_delay"])
                     press_alt_tab()
 
+            # нужно здесь изменить логику и возможно добавить отдельную ветку для настоящей клавиши F1,
+            # чтобы считать исходную позицию ротора
             elif char == config["char_f1"]:
                 if config["check_foreground_window_on_f1"]:
                     if not is_valid_foreground_window(config["valid_foreground_window_titles_on_f1"]):
@@ -269,7 +275,7 @@ def main():
                         config["shift_from_element"]
                     )
                     if source_field_value["error"]:
-                       print("Auto start is unavailable: no value for tracking")
+                       print("Auto start is unavailable: no source value for tracking")
                        # добавить continue?
 
                 debug_print("f1")
