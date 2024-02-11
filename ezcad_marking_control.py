@@ -7,7 +7,7 @@ from winGuiAuto import *
 import ast
 
 
-PROGRAM_VERSION = "1.0.3"
+PROGRAM_VERSION = "1.0.4"
 
 CONFIG_FILE = "ezcad_marking_control.ini"
 DEFAULT_CONFIG = {
@@ -188,19 +188,41 @@ def main():
     init_keyboard()
 
     source_field_value = None
+    program_f1_clicked = False
 
     with keyboard.Events() as events:
         for event in events:
-            # print(event)
-            # print(event.key.char)
-
             if type(event) is not keyboard.Events.Release:
+                continue
+
+            if event.key == keyboard.Key.f1:
+                # print(event)
+
+                # фильтрация программных нажатий f1 (их не нужно обрабатывать)
+                if program_f1_clicked:
+                    program_f1_clicked = False
+                    continue
+
+                if not is_valid_foreground_window([config["window_title"]]):
+                    continue
+
+                if config["auto_start_burn"]:
+                    # запомнить исходное значение поля позиции ротора
+                    source_field_value = get_field_value(
+                        config["window_title"], 
+                        config["element_title"], 
+                        config["shift_from_element"]
+                    )
+                    if source_field_value["error"]:
+                       print("Auto start is unavailable: no source value for tracking")
+
+                debug_print("Real f1 click is processed")
                 continue
 
             char = ''
             try:
                 char = event.key.char
-                # print(char)
+                # print(event)
             except AttributeError as e:
                 # print(e)
                 continue
@@ -256,8 +278,7 @@ def main():
                     delay(config["operations_delay"])
                     press_alt_tab()
 
-            # нужно здесь изменить логику и возможно добавить отдельную ветку для настоящей клавиши F1,
-            # чтобы считать исходную позицию ротора
+
             elif char == config["char_f1"]:
                 if config["check_foreground_window_on_f1"]:
                     if not is_valid_foreground_window(config["valid_foreground_window_titles_on_f1"]):
@@ -266,6 +287,12 @@ def main():
                 if config["switch_windows"]:
                     press_alt_tab()
                     delay(config["operations_delay"])
+                else:
+                    # если окна не переключаются, то дальше действовать нет смысла
+                    # то есть теперь клавиша "1" используется только 
+                    # при активном параметре переключения окон, что в общем логично,
+                    # поскольку иначе можно пользоваться просто клавишей f1
+                    continue
 
                 if config["auto_start_burn"]:
                     # запомнить исходное значение поля позиции ротора
@@ -280,6 +307,7 @@ def main():
 
                 debug_print("f1")
                 press_f1()
+                program_f1_clicked = True
 
 
 if __name__ == "__main__":
