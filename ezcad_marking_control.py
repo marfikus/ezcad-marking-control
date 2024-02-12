@@ -7,7 +7,7 @@ from winGuiAuto import *
 import ast
 
 
-PROGRAM_VERSION = "1.0.4"
+PROGRAM_VERSION = "1.0.5"
 
 CONFIG_FILE = "ezcad_marking_control.ini"
 DEFAULT_CONFIG = {
@@ -204,6 +204,7 @@ def main():
                     continue
 
                 if not is_valid_foreground_window([config["window_title"]]):
+                    debug_print("Invalid foreground window!")
                     continue
 
                 if config["auto_start_burn"]:
@@ -215,6 +216,8 @@ def main():
                     )
                     if source_field_value["error"]:
                        print("Auto start is unavailable: no source value for tracking")
+
+                    debug_print(f"{source_field_value = }")
 
                 debug_print("Real f1 click is processed")
                 continue
@@ -230,6 +233,7 @@ def main():
             if char == config["char_esc"]:
                 if config["check_foreground_window_on_esc"]:
                     if not is_valid_foreground_window([config["valid_foreground_window_title_on_esc"]]):
+                        debug_print("Invalid foreground window!")
                         continue
 
                 debug_print("esc")
@@ -252,6 +256,8 @@ def main():
                             config["element_title"], 
                             config["shift_from_element"]
                         )
+                        debug_print(f"{current_field_value = }")
+
                         if current_field_value["error"]:
                            print("Auto start is unavailable: no current value for tracking")
                            break
@@ -280,19 +286,20 @@ def main():
 
 
             elif char == config["char_f1"]:
-                if config["check_foreground_window_on_f1"]:
-                    if not is_valid_foreground_window(config["valid_foreground_window_titles_on_f1"]):
-                        continue
-
-                if config["switch_windows"]:
-                    press_alt_tab()
-                    delay(config["operations_delay"])
-                else:
+                if not config["switch_windows"]:
                     # если окна не переключаются, то дальше действовать нет смысла
                     # то есть теперь клавиша "1" используется только 
                     # при активном параметре переключения окон, что в общем логично,
                     # поскольку иначе можно пользоваться просто клавишей f1
                     continue
+
+                if config["check_foreground_window_on_f1"]:
+                    if not is_valid_foreground_window(config["valid_foreground_window_titles_on_f1"]):
+                        debug_print("Invalid foreground window!")
+                        continue
+
+                press_alt_tab()
+                delay(config["operations_delay"])
 
                 if config["auto_start_burn"]:
                     # запомнить исходное значение поля позиции ротора
@@ -304,6 +311,7 @@ def main():
                     if source_field_value["error"]:
                        print("Auto start is unavailable: no source value for tracking")
                        # добавить continue?
+                    debug_print(f"{source_field_value = }")
 
                 debug_print("f1")
                 press_f1()
